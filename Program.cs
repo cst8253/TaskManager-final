@@ -1,10 +1,18 @@
+using TaskManager;
 using TaskManager.Components;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<MyDbContext>(options =>
+{
+    options.UseSqlite("Data Source=Data/TaskManager.sqlite");
+});
+
 
 var app = builder.Build();
 

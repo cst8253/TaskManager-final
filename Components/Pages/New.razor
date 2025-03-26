@@ -1,5 +1,7 @@
 @page "/new"
 @rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@inject MyDbContext context
 @inject NavigationManager Navigator
 
 <PageTitle>Task Manager - New Item</PageTitle>
@@ -11,7 +13,7 @@
 <div class="row">
     <div class="col-lg-8 offset-lg-2">
         <Subtitle>New Item</Subtitle>
-        <EditForm Model="NewItem" FormName="NewItemForm" class="bg-light p-5 border border-1 mb-5">
+        <EditForm Model="NewItem" FormName="NewItemForm" class="bg-light p-5 border border-1 mb-5" OnSubmit="() => CreateItemAsync()">
             <div class="form-group">
                 <label class="form-label">New Task</label> 
                 <InputText @bind-Value="NewItem.Task" class="form-control mb-3" placeholder="New Task..." />
@@ -42,7 +44,7 @@
     protected override async Task OnInitializedAsync()
     {
     
-        foreach (var category in categories)
+        foreach (var category in context.Categories)
         {
             NewItem.Categories.Add(new CheckboxItem { 
                 Text = category.Name!,
@@ -50,5 +52,29 @@
                 IsChecked = false
             });
         }
+    }
+
+    private async Task CreateItemAsync()
+    {
+        // Save Item
+        int id = new Random().Next(100000, 900000);
+        NewItem.Id = id;
+        context.Items.Add(NewItem);
+        
+        // Save List
+        foreach (var c in NewItem.Categories)
+        {
+            if (c.IsChecked)
+            {
+                context.Lists.Add(new List
+                {
+                    ItemId = id,
+                    CategoryId = c.Value
+                });
+            }
+        }
+        
+        await context.SaveChangesAsync();
+        Navigator.NavigateTo("/");
     }
 }

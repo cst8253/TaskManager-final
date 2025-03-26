@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using Microsoft.EntityFrameworkCore
+@inject MyDbContext context
 @rendermode InteractiveServer
 
 <PageTitle>Task Manager</PageTitle>
@@ -10,8 +12,8 @@
 <div class="row">
     <div class="col-lg-8 offset-lg-2">
         <Subtitle>@Category</Subtitle>
-        <select class="form-select mb-3" @bind="@Category">
-            @foreach (var c in categories)
+        <select class="form-select mb-3" @bind="@Category" @bind:after="() => GetItemsAsync()">
+            @foreach (var c in context.Categories)
             {
             <option value="@c.Name">@c.Name</option>
             }
@@ -21,7 +23,8 @@
             @foreach (var item in items)
             {
             <li class="list-group-item">
-                <input type="checkbox" class="form-check-input" name="@item.Id" id="@item.Id"/>
+                <input type="checkbox" class="form-check-input" name="@item.Id" id="@item.Id"
+                       @bind="@item.IsComplete" @bind:after="() => UpdateItemAsync()"/>
                 <label for="@item.Id" class="form-check-label">@item.Task</label>
             </li>
             }
@@ -33,9 +36,35 @@
     private List<Item> items = [
         new Item { Id = 100001, Task = "Buy Milk" }
     ];
-    private List<Category> categories = [
-        new Category { Id = 100001, Name = "Important" }
-    ];
-
+    // private List<Category> categories = [
+    //     new Category { Id = 100001, Name = "Important" }
+    // ];
+    
     public string Category { get; set; } = "Important";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetItemsAsync();
+    }
+
+    private async Task GetItemsAsync()
+    {
+        if (string.IsNullOrEmpty(Category))
+        {
+            items = await context.Items
+                .FromSql($"SELECT * FROM Item")
+                .ToListAsync();
+        }
+        else
+        {
+            items = await context.Items
+                .FromSql($"SELECT Item.Id as Id, Task, IsComplete FROM Item JOIN List ON Item.Id = ItemId JOIN Category ON Category.Id = CategoryId WHERE Name = {Category}")
+                .ToListAsync();
+        }
+    }
+    
+    private async Task UpdateItemAsync()
+    {
+        await context.SaveChangesAsync();
+    }
 }

@@ -1,0 +1,54 @@
+@page "/new"
+@rendermode InteractiveServer
+@inject NavigationManager Navigator
+
+<PageTitle>Task Manager - New Item</PageTitle>
+
+<Header>
+    <a href="/" class="btn btn-secondary">Back</a>
+</Header>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <Subtitle>New Item</Subtitle>
+        <EditForm Model="NewItem" FormName="NewItemForm" class="bg-light p-5 border border-1 mb-5">
+            <div class="form-group">
+                <label class="form-label">New Task</label> 
+                <InputText @bind-Value="NewItem.Task" class="form-control mb-3" placeholder="New Task..." />
+            </div>
+      
+            <div class="mb-3">
+                <label class="form-label">Categories</label>
+                @foreach (var c in NewItem.Categories)
+                {
+                    <div class="form-group">
+                        <InputCheckbox @bind-Value="c.IsChecked" id="c.Value" class="form-check-input" />
+                        <label for="c.Value" class="form-check-label">@c.Text</label>
+                    </div>
+                }
+            </div>
+            <button class="btn btn-primary">Add Task</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public Item NewItem { get; set; } = new();
+    private List<Category> categories = [
+        new Category { Id = 100001, Name = "Important" } 
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+    
+        foreach (var category in categories)
+        {
+            NewItem.Categories.Add(new CheckboxItem { 
+                Text = category.Name!,
+                Value = category.Id,
+                IsChecked = false
+            });
+        }
+    }
+}

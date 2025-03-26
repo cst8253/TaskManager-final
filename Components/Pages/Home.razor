@@ -1,0 +1,41 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Task Manager</PageTitle>
+
+<Header>
+    <a href="/new" class="btn btn-secondary">&plus;</a>
+</Header>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <Subtitle>@Category</Subtitle>
+        <select class="form-select mb-3" @bind="@Category">
+            @foreach (var c in categories)
+            {
+            <option value="@c.Name">@c.Name</option>
+            }
+        </select>
+
+        <ul class="list-group mb-5">
+            @foreach (var item in items)
+            {
+            <li class="list-group-item">
+                <input type="checkbox" class="form-check-input" name="@item.Id" id="@item.Id"/>
+                <label for="@item.Id" class="form-check-label">@item.Task</label>
+            </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    private List<Item> items = [
+        new Item { Id = 100001, Task = "Buy Milk" }
+    ];
+    private List<Category> categories = [
+        new Category { Id = 100001, Name = "Important" }
+    ];
+
+    public string Category { get; set; } = "Important";
+}
